@@ -1,0 +1,432 @@
+// Map from USB keyboard codes (0x07) to ASCII codes
+// Implemented the 104 Keys Boot Keyboard (on 7 bits)
+// For Accent mark and dieresis, which are 2 keys combinations...
+// ... first accent o dieresis char is transmitted, then letter.
+// First 128 bytes  -> ASCII char without Shift neither AltGr pressed
+// Second 128 bytes -> ASCII char with Shift pressed
+// Third 128 bytes  -> ASCII char with AltGr pressed
+// Antonio Sánchez (@TheSonders)
+//
+// ASCII Control
+// 00	NULL	null
+// 01	SOH		RE PAG key
+// 02	STX		HOME key
+// 03	ETX		END	key
+// 04	EOT		AV PAG key
+// 05	ENQ		
+// 06	ACK
+// 07	BEL
+// 08	BS		Backspace key
+// 09	HT		TAB key
+// 0A	LF
+// 0B	VT
+// 0C	FF
+// 0D	CR		RETURN key
+// 0E	SO
+// 0F	SI
+// 10	DLE
+// 11	DC1		UP Arrow key
+// 12	DC2		DOWN Arrow key
+// 13	DC3		LEFT Arrow key
+// 14	DC4		RIGHT Arrow key
+// 15	NAK		F1
+// 16	SYN		F2
+// 17	ETB		F3
+// 18	CAN		F4
+// 19	EM		F5
+// 1A	SUB		F6
+// 1B	ESC		F7
+// 1C	FS		F8
+// 1D	GS		F9
+// 1E	RS		F10
+// 1F	US		F11
+// 7F	DEL		DEL Key
+
+
+////////////////////////First 128 bytes -> NO Shift NO ALTGR pressed
+00			//00 Reserved								
+00			//01 Keyboard ErrorRollOver				
+00			//02 Keyboard POSTFail
+00			//03 Keyboard ErrorUndefined
+61			//04 Keyboard a and A
+62			//05 Keyboard b and B
+63			//06 Keyboard c and C
+64			//07 Keyboard d and D
+65			//08 Keyboard e and E
+66			//09 Keyboard f and F
+67			//0A Keyboard g and G
+68			//0B Keyboard h and H
+69			//0C Keyboard i and I
+6A			//0D Keyboard j and J
+6B			//0E Keyboard k and K
+6C			//0F Keyboard l and L
+6D			//10 Keyboard m and M
+6E			//11 Keyboard n and N
+6F			//12 Keyboard o and O
+70			//13 Keyboard p and P
+71			//14 Keyboard q and Q
+72			//15 Keyboard r and R
+73			//16 Keyboard s and S
+74			//17 Keyboard t and T
+75			//18 Keyboard u and U
+76			//19 Keyboard v and V
+77			//1A Keyboard w and W
+78			//1B Keyboard x and X
+79			//1C Keyboard y and Y
+7A			//1D Keyboard z and Z
+31			//1E Keyboard 1 and !
+32			//1F Keyboard 2 and @
+33			//20 Keyboard 3 and #
+34			//21 Keyboard 4 and $
+35			//22 Keyboard 5 and %
+36			//23 Keyboard 6 and ∧
+37			//24 Keyboard 7 and &
+38			//25 Keyboard 8 and *
+39			//26 Keyboard 9 and (
+30			//27 Keyboard 0 and )
+0D			//28 Keyboard Return (ENTER)
+00			//29 Keyboard ESCAPE
+08			//2A Keyboard DELETE (Backspace)
+09			//2B Keyboard Tab
+20			//2C Keyboard Spacebar
+27			//2D Keyboard - and (underscore)	('? key)
+A1			//2E Keyboard = and + 				(¡¿ key)
+60			//2F Keyboard [ and { 				(`^[ key)
+2B			//30 Keyboard ] and } 				(+*] key)
+E7			//31 Keyboard \and |  				(çÇ} key)	
+00			//32 Keyboard Non-US # and ˜		(????????)	
+F1			//33 Keyboard ; and :				(ñÑ key)
+B4			//34 Keyboard ‘ and “				(´¨{ key)	
+A7			//35 Keyboard Grave Accent and Tilde(ºª\ key)
+2C			//36 Keyboard , and <				(,; key)
+2E			//37 Keyboard . and >				(.: key)
+2D			//38 Keyboard / and ?				(-_ key)
+00			//39 Keyboard Caps Lock
+15			//3A Keyboard F1
+16			//3B Keyboard F2
+17			//3C Keyboard F3
+18			//3D Keyboard F4
+19			//3E Keyboard F5
+1A			//3F Keyboard F6
+1B			//40 Keyboard F7
+1C			//41 Keyboard F8
+1D			//42 Keyboard F9
+1E			//43 Keyboard F10
+1F			//44 Keyboard F11
+00			//45 Keyboard F12
+00			//46 Keyboard PrintScreen
+00			//47 Keyboard Scroll Lock
+00			//48 Keyboard Pause
+00			//49 Keyboard Insert
+02			//4A Keyboard Home
+01			//4B Keyboard PageUp
+71			//4C Keyboard Delete Forward
+03			//4D Keyboard End
+04			//4E Keyboard PageDown
+14			//4F Keyboard RightArrow
+13			//50 Keyboard LeftArrow
+12			//51 Keyboard DownArrow
+11			//52 Keyboard UpArrow
+00			//53 Keypad Num Lock and Clear
+2F			//54 Keypad /
+2A			//55 Keypad *
+2D			//56 Keypad -
+2B			//57 Keypad +
+0D			//58 Keypad ENTER
+31			//59 Keypad 1 and End
+32			//5A Keypad 2 and Down Arrow
+33			//5B Keypad 3 and PageDn
+34			//5C Keypad 4 and Left Arrow
+35			//5D Keypad 5 
+36			//5E Keypad 6 and Right Arrow
+37			//5F Keypad 7 and Home
+38			//60 Keypad 8 and Up Arrow
+39			//61 Keypad 9 and PageUp
+30			//62 Keypad 0 and Insert
+2E			//63 Keypad . and Delete
+00			//64 Keyboard Non-US \and |			(????????)
+00			//65 Keyboard Application
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00			
+////////////////////////Second 256 bytes -> Shift pressed ALTGR not pressed
+00			//00 Reserved								
+00			//01 Keyboard ErrorRollOver				
+00			//02 Keyboard POSTFail
+00			//03 Keyboard ErrorUndefined
+41			//04 Keyboard a and A
+42			//05 Keyboard b and B
+43			//06 Keyboard c and C
+44			//07 Keyboard d and D
+45			//08 Keyboard e and E
+46			//09 Keyboard f and F
+47			//0A Keyboard g and G
+48			//0B Keyboard h and H
+49			//0C Keyboard i and I
+4A			//0D Keyboard j and J
+4B			//0E Keyboard k and K
+4C			//0F Keyboard l and L
+4D			//10 Keyboard m and M
+4E			//11 Keyboard n and N
+4F			//12 Keyboard o and O
+50			//13 Keyboard p and P
+51			//14 Keyboard q and Q
+52			//15 Keyboard r and R
+53			//16 Keyboard s and S
+54			//17 Keyboard t and T
+55			//18 Keyboard u and U
+56			//19 Keyboard v and V
+57			//1A Keyboard w and W
+58			//1B Keyboard x and X
+59			//1C Keyboard y and Y
+5A			//1D Keyboard z and Z
+21			//1E Keyboard 1 and !				(1!| key)
+22			//1F Keyboard 2 and @				(2"@ key)
+FA			//20 Keyboard 3 and #				(3·# key)
+24			//21 Keyboard 4 and $				(4$~ key)
+25			//22 Keyboard 5 and %				(5%€ key)
+26			//23 Keyboard 6 and ∧				(6&¬ key)
+27			//24 Keyboard 7 and &				(7/ key)
+28			//25 Keyboard 8 and *				(8( key)
+29			//26 Keyboard 9 and (				(9) key)
+3D			//27 Keyboard 0 and )				(0= key)
+0D			//28 Keyboard Return (ENTER)
+00			//29 Keyboard ESCAPE
+08			//2A Keyboard DELETE (Backspace)
+09			//2B Keyboard Tab
+20			//2C Keyboard Spacebar
+3F			//2D Keyboard - and (underscore)	('? key)
+BF			//2E Keyboard = and + 				(¡¿ key)
+5E			//2F Keyboard [ and { 				(`^[ key)
+2A			//30 Keyboard ] and } 				(+*] key)
+C7			//31 Keyboard \and |  				(çÇ} key)
+00			//32 Keyboard Non-US # and ˜		(????????)
+D1			//33 Keyboard ; and :				(ñÑ key)
+A8			//34 Keyboard ‘ and “				(´¨{ key)
+A6			//35 Keyboard Grave Accent and Tilde(ºª\ key)
+3B			//36 Keyboard , and <				(,; key)
+3A			//37 Keyboard . and >				(.: key)
+5F			//38 Keyboard / and ?				(-_ key)
+00			//39 Keyboard Caps Lock
+15			//3A Keyboard F1
+16			//3B Keyboard F2
+17			//3C Keyboard F3
+18			//3D Keyboard F4
+19			//3E Keyboard F5
+1A			//3F Keyboard F6
+1B			//40 Keyboard F7
+1C			//41 Keyboard F8
+1D			//42 Keyboard F9
+1E			//43 Keyboard F10
+1F			//44 Keyboard F11
+00			//45 Keyboard F12
+00			//46 Keyboard PrintScreen
+00			//47 Keyboard Scroll Lock
+00			//48 Keyboard Pause
+00			//49 Keyboard Insert
+02			//4A Keyboard Home
+01			//4B Keyboard PageUp
+71			//4C Keyboard Delete Forward
+03			//4D Keyboard End
+04			//4E Keyboard PageDown
+14			//4F Keyboard RightArrow
+13			//50 Keyboard LeftArrow
+12			//51 Keyboard DownArrow
+11			//52 Keyboard UpArrow
+00			//53 Keypad Num Lock and Clear
+2F			//54 Keypad /
+2A			//55 Keypad *
+2D			//56 Keypad -
+2B			//57 Keypad +
+0D			//58 Keypad ENTER
+31			//59 Keypad 1 and End
+32			//5A Keypad 2 and Down Arrow
+33			//5B Keypad 3 and PageDn
+34			//5C Keypad 4 and Left Arrow
+35			//5D Keypad 5 
+36			//5E Keypad 6 and Right Arrow
+37			//5F Keypad 7 and Home
+38			//60 Keypad 8 and Up Arrow
+39			//61 Keypad 9 and PageUp
+30			//62 Keypad 0 and Insert
+2E			//63 Keypad . and Delete
+00			//64 Keyboard Non-US \and |			(????????)
+00			//65 Keyboard Application
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00			
+////////////////////////Third 256 bytes -> Shift don't care ALTGR pressed
+00			//00 Reserved								
+00			//01 Keyboard ErrorRollOver				
+00			//02 Keyboard POSTFail
+00			//03 Keyboard ErrorUndefined
+00			//04 Keyboard a and A
+00			//05 Keyboard b and B
+00			//06 Keyboard c and C
+00			//07 Keyboard d and D
+80			//08 Keyboard e and E				(eE€ key)
+00			//09 Keyboard f and F
+00			//0A Keyboard g and G
+00			//0B Keyboard h and H
+00			//0C Keyboard i and I
+00			//0D Keyboard j and J
+00			//0E Keyboard k and K
+00			//0F Keyboard l and L
+00			//10 Keyboard m and M
+00			//11 Keyboard n and N
+00			//12 Keyboard o and O
+00			//13 Keyboard p and P
+00			//14 Keyboard q and Q
+00			//15 Keyboard r and R
+00			//16 Keyboard s and S
+00			//17 Keyboard t and T
+00			//18 Keyboard u and U
+00			//19 Keyboard v and V
+00			//1A Keyboard w and W
+00			//1B Keyboard x and X
+00			//1C Keyboard y and Y
+00			//1D Keyboard z and Z
+7C			//1E Keyboard 1 and !				(1!| key)
+40			//1F Keyboard 2 and @				(2"@ key)
+23			//20 Keyboard 3 and #				(3·# key)
+7E			//21 Keyboard 4 and $				(4$~ key)
+80			//22 Keyboard 5 and %				(5%€ key)
+AA			//23 Keyboard 6 and ∧				(6&¬ key)
+00			//24 Keyboard 7 and &				(7/ key)
+00			//25 Keyboard 8 and *				(8( key)
+00			//26 Keyboard 9 and (				(9) key)
+00			//27 Keyboard 0 and )				(0= key)
+0D			//28 Keyboard Return (ENTER)
+00			//29 Keyboard ESCAPE
+08			//2A Keyboard DELETE (Backspace)
+09			//2B Keyboard Tab
+20			//2C Keyboard Spacebar
+00			//2D Keyboard - and (underscore)	('? key)
+00			//2E Keyboard = and + 				(¡¿ key)
+5B			//2F Keyboard [ and { 				(`^[ key)
+5D			//30 Keyboard ] and } 				(+*] key)
+7D			//31 Keyboard \and |  				(çÇ} key)
+00			//32 Keyboard Non-US # and ˜		(????????)
+00			//33 Keyboard ; and :				(ñÑ key)
+7B			//34 Keyboard ‘ and “				(´¨{ key)
+5C			//35 Keyboard Grave Accent and Tilde(ºª\ key)
+00			//36 Keyboard , and <				(,; key)
+00			//37 Keyboard . and >				(.: key)
+00			//38 Keyboard / and ?				(-_ key)
+00			//39 Keyboard Caps Lock
+15			//3A Keyboard F1
+16			//3B Keyboard F2
+17			//3C Keyboard F3
+18			//3D Keyboard F4
+19			//3E Keyboard F5
+1A			//3F Keyboard F6
+1B			//40 Keyboard F7
+1C			//41 Keyboard F8
+1D			//42 Keyboard F9
+1E			//43 Keyboard F10
+1F			//44 Keyboard F11
+00			//45 Keyboard F12
+00			//46 Keyboard PrintScreen
+00			//47 Keyboard Scroll Lock
+00			//48 Keyboard Pause
+00			//49 Keyboard Insert
+02			//4A Keyboard Home
+01			//4B Keyboard PageUp
+71			//4C Keyboard Delete Forward
+03			//4D Keyboard End
+04			//4E Keyboard PageDown
+14			//4F Keyboard RightArrow
+13			//50 Keyboard LeftArrow
+12			//51 Keyboard DownArrow
+11			//52 Keyboard UpArrow
+00			//53 Keypad Num Lock and Clear
+2F			//54 Keypad /
+2A			//55 Keypad *
+2D			//56 Keypad -
+2B			//57 Keypad +
+0D			//58 Keypad ENTER
+31			//59 Keypad 1 and End
+32			//5A Keypad 2 and Down Arrow
+33			//5B Keypad 3 and PageDn
+34			//5C Keypad 4 and Left Arrow
+35			//5D Keypad 5 
+36			//5E Keypad 6 and Right Arrow
+37			//5F Keypad 7 and Home
+38			//60 Keypad 8 and Up Arrow
+39			//61 Keypad 9 and PageUp
+30			//62 Keypad 0 and Insert
+2E			//63 Keypad . and Delete
+00			//64 Keyboard Non-US \and |			(????????)
+00			//65 Keyboard Application
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00			
