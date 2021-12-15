@@ -58,7 +58,6 @@ reg [15:0] v_ram [1199:0];
  initial 
 	$readmemh ("video_ram.txt",v_ram);
 
-
 wire VisibleArea;
 wire [11:0] Color;
 wire Pixel,Blink;
