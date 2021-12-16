@@ -355,6 +355,7 @@ end
 `define TL_SEND_ACK_DATA1      23
 `define TL_Wait                24
 `define TL_DelayRetry          25
+`define TL_KeepAlive2          26
 
 `define LEDS    {LedScroll,LedCaps,LedNum}
 
@@ -388,19 +389,20 @@ reg [95:0]Packet_ACK = {`PID_ACK};
 
 reg [8:0] TXLeftBits=0;
 reg MACHINE_RESET=0;
-reg [2:0]TimeOut=0;
+reg [3:0]TimeOut=0;
 reg [2:0]LatchLEDS=0;
 reg [2:0]Stuff_Count=0;
 
 always @(posedge clk)begin
     if (StartTimer==1) StartTimer<=0;
     if (MACHINE_RESET==1) MACHINE_RESET<=0;
-    if (TXLeftBits==0 && (TimerEnd==1 || NewInPacket==1))begin
+    if (MACHINE_RESET==0 && TXLeftBits==0 && (TimerEnd==1 || NewInPacket==1))begin
     case (TL_STM)
         `TL_Unconnected:begin ListenIfConnected:
             IO<=`LineAsInput;
             Device_Connected<=0;
             TimeOut<=0;
+            LatchLEDS<=0;
             if (INSYNC_STM==`STM_Idle)begin
                 TL_STM<=`TL_Reset;
                 IO<=`LineAsOutput;
@@ -409,7 +411,7 @@ always @(posedge clk)begin
         `TL_Reset:begin SendRESETToDevice:
                 SendReset;
                 TL_STM<=`TL_SendSETUPAddress;
-                SetTimer(10);
+                SetTimer(20);
         end
         `TL_Wait: begin
                 IO<=`LineAsInput;
@@ -422,13 +424,13 @@ always @(posedge clk)begin
         `TL_WaitResponse: begin
             if (TimerEnd==1 || 
                 (TL_Fail!=`TL_IN21 && RECEIVED_PID !=`PID_ACK && RECEIVED_PID!=`PID_Data1))begin
-                if (TimeOut==7) begin
+                if (TimeOut==15) begin
                     TL_STM<=`TL_Unconnected;
                     MACHINE_RESET<=1;
                 end
                 else begin
                     TimeOut<=TimeOut+1;
-                    SetTimer(2);
+                    SetTimer(1);
                     TL_STM<=`TL_DelayRetry;
                 end
             end
@@ -501,7 +503,7 @@ always @(posedge clk)begin
         `TL_IN20_REPORT:begin
                 SendPacket(Packet_IN20,24);
                 SetTimer(0);
-                Wait_Response(`TL_SEND_OUT20_REPORT,`TL_SEND_ACK_DATA1);
+                Wait_Response(`TL_IN20_REPORT,`TL_SEND_ACK_DATA1);
         end
         `TL_IN20_CONFIG,`TL_IN20_PROTOCOL: begin
             SendPacket(Packet_IN20,24);
@@ -527,13 +529,18 @@ always @(posedge clk)begin
                 SetTimer(0);
             end
             else begin
-                TL_STM<=`TL_IN21;
+                TL_STM<=`TL_KeepAlive2;
                 SendKeepAlive;
-                SetTimer(2);
+                SetTimer(1);
             end
         end
+        `TL_KeepAlive2:begin
+            TL_STM<=`TL_IN21;
+            SendKeepAlive;
+            SetTimer(1);  
+        end
         `TL_VerifyData: begin
-                SetTimer(2); 
+                SetTimer(1); 
                 TL_STM<=`TL_KeepAlive;
                 if (RECEIVED_PID==`PID_Data0 || RECEIVED_PID==`PID_Data1) begin
                     SendPacket(Packet_ACK,8);
