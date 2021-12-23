@@ -12,6 +12,9 @@ si es posible, se irá añadiendo soporte para teclados full speed.
 - USB_PS2: conversión directa de USB a PS/2 para aprovechar cores retro sin apenas modificarlos.  
    Para ello, el módulo se conecta a las líneas USB y, como salida, genera las señales PS/2.  
    Este módulo tiene 3 entradas para controlar el estado de los leds del teclado USB, si no van a usarse, deben conectarse a 0 lógico.
+   Requiere el archivo USB_PS2_CONVERSION.txt.
+
+![DATA](data_capture.png)
 
 .
 
