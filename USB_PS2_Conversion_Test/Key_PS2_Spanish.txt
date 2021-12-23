@@ -1,0 +1,821 @@
+// Map from keyboard codes to ASCII codes
+// Extended Keys (ArrowKeys, AltGr, Right Ctrl...) have 7th bit ON
+// For Accent mark and dieresis, which are 2 keys combinations...
+// ... first accent o dieresis char is transmitted, then letter.
+// First 256 bytes  -> ASCII char without Shift neither AltGr pressed
+// Second 256 bytes -> ASCII char with Shift pressed
+// Third 256 bytes  -> ASCII char with AltGr pressed
+// ASCII Control
+// 00	NULL	null
+// 01	SOH		RE PAG key
+// 02	STX		HOME key
+// 03	ETX		END	key
+// 04	EOT		AV PAG key
+// 05	ENQ		
+// 06	ACK
+// 07	BEL
+// 08	BS		Backspace key
+// 09	HT		TAB key
+// 0A	LF
+// 0B	VT
+// 0C	FF
+// 0D	CR		RETURN key
+// 0E	SO
+// 0F	SI
+// 10	DLE
+// 11	DC1		UP Arrow key
+// 12	DC2		DOWN Arrow key
+// 13	DC3		LEFT Arrow key
+// 14	DC4		RIGHT Arrow key
+// 15	NAK		F1
+// 16	SYN		F2
+// 17	ETB		F3
+// 18	CAN		F4
+// 19	EM		F5
+// 1A	SUB		F6
+// 1B	ESC		F7
+// 1C	FS		F8
+// 1D	GS		F9
+// 1E	RS		F10
+// 1F	US		F11
+// 7F	DEL		DEL Key
+
+// Antonio Sánchez
+
+////////////////////////First 256 bytes -> NO Shift NO ALTGR pressed
+00			/////////////////00//////////////
+1D			// F9 key
+00
+19			// F5 key
+17			// F3 key
+15			// F1 key
+16			// F2 key
+00			// F12 key
+00
+1E			// F10 key
+1C			// F8 key
+1A			// F6 key
+18			// F4 key
+09			// TAB key
+A7			// ºª\ key 
+00
+00			/////////////////10///////////////
+00			// Left ALT key
+00			// Left SHIFT key
+00
+00			// Left CTRL key
+71			// qQ key
+31			// 1!| key
+00
+00
+00
+7A			// zZ key
+73			// sS key
+61			// aA key
+77			// wW key
+32			// 2"@ key
+00
+00			/////////////////20///////////////
+63			// cC key
+78			// xX key
+64			// dD key
+65			// eE€ key
+34			// 4$~ key
+33			// 3·# key
+00
+00
+20			// SPACE bar key
+76			// vV key
+66			// fF key
+74			// tT key
+72			// rR key
+35			// 5%€ key
+00
+00			/////////////////30///////////////
+6E			// nN key
+62			// bB key
+68			// hH key
+67			// gG key
+79			// yY key
+36			// 6&¬ key
+00
+00
+00
+6D			// mM key
+6A			// jJ key
+75			// uU key
+37			// 7/ key
+38			// 8( key
+00
+00			/////////////////40///////////////
+2C			// ,; key
+6B			// kK key
+69			// iI key
+6F			// oO key
+30			// 0= key
+39			// 9) key
+00
+00
+2E			//.: key
+2D			//-_ key
+6C			// lL key
+F1			// ñÑ key
+70			// pP key
+27			// '? key
+00
+00			/////////////////50///////////////
+00
+B4			// ´¨{ key
+00
+60			// `^[ key
+A1			// ¡¿ key
+00
+00
+00			// SHIFT LOCK key
+00			// Right SHIFT key
+0D			// RETURN key
+2B			// +*] key
+00
+E7			// çÇ} key
+00
+00
+00			/////////////////60///////////////
+3C			// <> key
+00
+00
+00
+00
+08			// Backspace key
+00
+00
+31			// 1 Keypad key
+00
+34			// 4 Keypad key
+37			// 7 Keypad key
+00
+00
+00
+30			/////////////////70/////////////// 0 Keypad key
+2E			// . Keypad key
+32			// 2 Keypad key
+35			// 5 Keypad key
+36			// 6 Keypad key
+38			// 8 Keypad key
+00			// ESCAPE key
+00			// NUM Lock key
+1F			// F11 key
+2B			// + Keypad key
+33			// 3 Keypad key
+2D			// - Keypad key
+2A			// * Keypad key
+39			// 9 Keypad key
+00			// DESP LOCK key
+00
+00			/////////////////80///////////////
+00
+00
+1B			//F7 key
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00			/////////////////90///////////////
+00			//AltGr Key
+00
+00
+00			//Right CTRL key
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00			//Left WIN key
+00			/////////////////A0///////////////
+00
+00
+00
+00
+00
+00
+00			//Right WIN key
+00
+00
+00
+00
+00
+00
+00
+00			//SUBMENU key			
+00			/////////////////B0///////////////
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00			/////////////////C0///////////////
+00
+00
+00
+00
+00
+00
+00
+00
+00
+2F			// BackSlash Keypad key
+00
+00
+00
+00
+00
+00			/////////////////D0///////////////
+00
+00
+00
+00
+00
+00
+00
+00
+00
+0D			// Enter Keypad key
+00
+00
+00
+00
+00
+00			/////////////////E0///////////////
+00
+00
+00
+00
+00
+00
+00
+00
+03			// End Key
+00
+13			// Left Arrow key
+02			// Home key
+00
+00
+00
+00			/////////////////F0///////////////  Insert key
+71			// Del Key
+12			// Down Arrow key
+00
+14			// Right Arrow key
+11			// Up Arrow key
+00
+00
+00
+00
+04			// AV Pag key
+00
+00
+01			// RE Pag key
+00
+00
+
+
+////////////////////////Second 256 bytes -> Shift pressed ALTGR not pressed
+00			/////////////////00//////////////
+1D			// F9 key
+00
+19			// F5 key
+17			// F3 key
+15			// F1 key
+16			// F2 key
+00			// F12 key
+00
+1E			// F10 key
+1C			// F8 key
+1A			// F6 key
+18			// F4 key
+09			// TAB key
+A6			// ºª\ key 
+00
+00			/////////////////10///////////////
+00			// Left ALT key
+00			// Left SHIFT key
+00
+00			// Left CTRL key
+51			// qQ key
+21			// 1!| key
+00
+00
+00
+5A			// zZ key
+53			// sS key
+41			// aA key
+57			// wW key
+22			// 2"@ key
+00
+00			/////////////////20///////////////
+43			// cC key
+58			// xX key
+44			// dD key
+45			// eE€ key
+24			// 4$~ key
+FA			// 3·# key
+00
+00
+20			// SPACE bar key
+56			// vV key
+46			// fF key
+54			// tT key
+52			// rR key
+25			// 5%€ key
+00
+00			/////////////////30///////////////
+4E			// nN key
+42			// bB key
+48			// hH key
+47			// gG key
+59			// yY key
+26			// 6&¬ key
+00
+00
+00
+4D			// mM key
+4A			// jJ key
+55			// uU key
+27			// 7/ key
+28			// 8( key
+00
+00			/////////////////40///////////////
+3B			// ,; key
+4B			// kK key
+49			// iI key
+4F			// oO key
+3D			// 0= key
+29			// 9) key
+00
+00
+3A			//.: key
+5F			//-_ key
+4C			// lL key
+D1			// ñÑ key
+50			// pP key
+3F			// '? key
+00
+00			/////////////////50///////////////
+00
+A8			// ´¨{ key
+00
+5E			// `^[ key
+BF			// ¡¿ key
+00
+00
+00			// SHIFT LOCK key
+00			// Right SHIFT key
+0D			// RETURN key
+2A			// +*] key
+00
+C7			// çÇ} key
+00
+00
+00			/////////////////60///////////////
+3E			// <> key
+00
+00
+00
+00
+08			// Backspace key
+00
+00
+31			// 1 Keypad key
+00
+34			// 4 Keypad key
+37			// 7 Keypad key
+00
+00
+00
+30			/////////////////70/////////////// 0 Keypad key
+2E			// . Keypad key
+32			// 2 Keypad key
+35			// 5 Keypad key
+36			// 6 Keypad key
+38			// 8 Keypad key
+00			// ESCAPE key
+00			// NUM Lock key
+1F			// F11 key
+2B			// + Keypad key
+33			// 3 Keypad key
+2D			// - Keypad key
+2A			// * Keypad key
+39			// 9 Keypad key
+00			// DESP LOCK key
+00
+00			/////////////////80///////////////
+00
+00
+1B			//F7 key
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00			/////////////////90///////////////
+00			//AltGr Key
+00
+00
+00			//Right CTRL key
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00			//Left WIN key
+00			/////////////////A0///////////////
+00
+00
+00
+00
+00
+00
+00			//Right WIN key
+00
+00
+00
+00
+00
+00
+00
+00			//SUBMENU key			
+00			/////////////////B0///////////////
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00			/////////////////C0///////////////
+00
+00
+00
+00
+00
+00
+00
+00
+00
+2F			// BackSlash Keypad key
+00
+00
+00
+00
+00
+00			/////////////////D0///////////////
+00
+00
+00
+00
+00
+00
+00
+00
+00
+0D			// Enter Keypad key
+00
+00
+00
+00
+00
+00			/////////////////E0///////////////
+00
+00
+00
+00
+00
+00
+00
+00
+03			// End Key
+00
+13			// Left Arrow key
+02			// Home key
+00
+00
+00
+00			/////////////////F0///////////////  Insert key
+71			// Del Key
+12			// Down Arrow key
+00
+14			// Right Arrow key
+11			// Up Arrow key
+00
+00
+00
+00
+04			// AV Pag key
+00
+00
+01			// RE Pag key
+00
+00
+
+
+////////////////////////Third 256 bytes -> Shift don't care ALTGR pressed
+00			/////////////////00//////////////
+1D			// F9 key
+00
+19			// F5 key
+17			// F3 key
+15			// F1 key
+16			// F2 key
+00			// F12 key
+00
+1E			// F10 key
+1C			// F8 key
+1A			// F6 key
+18			// F4 key
+09			// TAB key
+5C			// ºª\ key 
+00
+00			/////////////////10///////////////
+00			// Left ALT key
+00			// Left SHIFT key
+00
+00			// Left CTRL key
+00			// qQ key
+7C			// 1!| key
+00
+00
+00
+00			// zZ key
+00			// sS key
+00			// aA key
+00			// wW key
+40			// 2"@ key
+00
+00			/////////////////20///////////////
+00			// cC key
+00			// xX key
+00			// dD key
+80			// eE€ key
+7E			// 4$~ key
+23			// 3·# key
+00
+00
+20			// SPACE bar key
+00			// vV key
+00			// fF key
+00			// tT key
+00			// rR key
+80			// 5%€ key
+00
+00			/////////////////30///////////////
+00			// nN key
+00			// bB key
+00			// hH key
+00			// gG key
+00			// yY key
+AA			// 6&¬ key
+00
+00
+00
+00			// mM key
+00			// jJ key
+00			// uU key
+00			// 7/ key
+00			// 8( key
+00
+00			/////////////////40///////////////
+00			// ,; key
+00			// kK key
+00			// iI key
+00			// oO key
+00			// 0= key
+00			// 9) key
+00
+00
+00			//.: key
+00			//-_ key
+00			// lL key
+00			// ñÑ key
+00			// pP key
+00			// '? key
+00
+00			/////////////////50///////////////
+00
+7B			// ´¨{ key
+00
+5B			// `^[ key
+00			// ¡¿ key
+00
+00
+00			// SHIFT LOCK key
+00			// Right SHIFT key
+0D			// RETURN key
+5D			// +*] key
+00
+7D			// çÇ} key
+00
+00
+00			/////////////////60///////////////
+00			// <> key
+00
+00
+00
+00
+08			// Backspace key
+00
+00
+31			// 1 Keypad key
+00
+34			// 4 Keypad key
+37			// 7 Keypad key
+00
+00
+00
+30			/////////////////70/////////////// 0 Keypad key
+2E			// . Keypad key
+32			// 2 Keypad key
+35			// 5 Keypad key
+36			// 6 Keypad key
+38			// 8 Keypad key
+00			// ESCAPE key
+00			// NUM Lock key
+1F			// F11 key
+2B			// + Keypad key
+33			// 3 Keypad key
+2D			// - Keypad key
+2A			// * Keypad key
+39			// 9 Keypad key
+00			// DESP LOCK key
+00
+00			/////////////////80///////////////
+00
+00
+1B			//F7 key
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00			/////////////////90///////////////
+00			//AltGr Key
+00
+00
+00			//Right CTRL key
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00			//Left WIN key
+00			/////////////////A0///////////////
+00
+00
+00
+00
+00
+00
+00			//Right WIN key
+00
+00
+00
+00
+00
+00
+00
+00			//SUBMENU key			
+00			/////////////////B0///////////////
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00
+00			/////////////////C0///////////////
+00
+00
+00
+00
+00
+00
+00
+00
+00
+2F			// BackSlash Keypad key
+00
+00
+00
+00
+00
+00			/////////////////D0///////////////
+00
+00
+00
+00
+00
+00
+00
+00
+00
+0D			// Enter Keypad key
+00
+00
+00
+00
+00
+00			/////////////////E0///////////////
+00
+00
+00
+00
+00
+00
+00
+00
+03			// End Key
+00
+13			// Left Arrow key
+02			// Home key
+00
+00
+00
+00			/////////////////F0///////////////  Insert key
+71			// Del Key
+12			// Down Arrow key
+00
+14			// Right Arrow key
+11			// Up Arrow key
+00
+00
+00
+00
+04			// AV Pag key
+00
+00
+01			// RE Pag key
+00
+00
+
+
