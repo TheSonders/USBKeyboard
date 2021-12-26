@@ -27,8 +27,6 @@ SOFTWARE.
 Convertidor de teclado USB a teclado PS2 con soporte de LEDs
 Este módulo recibe y maneja directamente las líneas de transmisión USB.
 Genera las señales PS/2 a 19200 baudios que simulan las teclas pulsadas/soltadas.
- Versión Preliminar:
- -Soporta sólo Low Speed devices 1.5Mbps
  
  USO DEL MÓDULO:
  -Señal de entrada de reloj 48MHz
@@ -250,6 +248,7 @@ end
 `define PID_Data1       8'h4B
 `define PID_ACK         8'hD2
 `define PID_NAK         8'h5A
+`define PID_SOF         8'hA5
 
 `define STM_IDLE        0
 `define STM_PID         1
@@ -377,6 +376,7 @@ reg [95:0]Packet_LEDS_101    ={16'hBC80,8'h05,`PID_Data1};
 reg [95:0]Packet_LEDS_110    ={16'hBDC0,8'h06,`PID_Data1};
 reg [95:0]Packet_LEDS_111    ={16'h7D01,8'h07,`PID_Data1};
 reg [95:0]Packet_ACK = {`PID_ACK};
+reg [95:0]Packet_SOF = {5'h08,11'd263,`PID_SOF};
 
 reg [8:0] TXLeftBits=0;
 reg MACHINE_RESET=0;
@@ -551,14 +551,16 @@ always @(posedge clk)begin
             end
             else begin
                 TL_STM<=`TL_KeepAlive2;
-                SendKeepAlive;
+                if (Device_Speed==1) SendPacket(Packet_SOF,24);
+                else SendKeepAlive;
                 SetTimer(1);
             end
         end
         `TL_KeepAlive2:begin
             if (PS2Busy==1)TL_STM<=`TL_KeepAlive2;
             else TL_STM<=`TL_IN21;
-            SendKeepAlive;
+            if (Device_Speed==1) SendPacket(Packet_SOF,24);
+            else SendKeepAlive;
             SetTimer(1);  
         end
         `TL_VerifyData: begin
