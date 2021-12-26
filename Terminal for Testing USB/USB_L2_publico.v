@@ -24,9 +24,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
  USB Layer 1
- Versión reducida pero funcional de la interfaz de teclado USB
+ Versión reducida pero funcional de la interfaz de teclado USB.
+ Soporta Low Speed y Full Speed devices.
  -No realiza comprobación del CRC
- -Soporta sólo Low Speed devices 1.5Mpbs
  -Paquetes de transmisión precalculados
  
  USB Layer 2
@@ -259,6 +259,7 @@ end
 `define PID_Data1       8'h4B
 `define PID_ACK         8'hD2
 `define PID_NAK         8'h5A
+`define PID_SOF         8'hA5
 
 `define STM_IDLE        0
 `define STM_PID         1
@@ -386,6 +387,7 @@ reg [95:0]Packet_LEDS_101    ={16'hBC80,8'h05,`PID_Data1};
 reg [95:0]Packet_LEDS_110    ={16'hBDC0,8'h06,`PID_Data1};
 reg [95:0]Packet_LEDS_111    ={16'h7D01,8'h07,`PID_Data1};
 reg [95:0]Packet_ACK = {`PID_ACK};
+reg [95:0]Packet_SOF = {5'h08,11'd263,`PID_SOF};
 
 reg [8:0] TXLeftBits=0;
 reg MACHINE_RESET=0;
@@ -530,13 +532,15 @@ always @(posedge clk)begin
             end
             else begin
                 TL_STM<=`TL_KeepAlive2;
-                SendKeepAlive;
+                if (Device_Speed==1) SendPacket(Packet_SOF,24);
+                else SendKeepAlive;
                 SetTimer(1);
             end
         end
         `TL_KeepAlive2:begin
             TL_STM<=`TL_IN21;
-            SendKeepAlive;
+            if (Device_Speed==1) SendPacket(Packet_SOF,24);
+            else SendKeepAlive;
             SetTimer(1);  
         end
         `TL_VerifyData: begin
