@@ -10,9 +10,9 @@ Lista de teclados testeados y funcionando:
 - MANFALI Generic Keyboard (VID:1C4F, PID:0002)
 - Dell Smartcard 06JJ08 (VID:413C, PID:2101)
 
-## Tres opciones:
-- USB_L1: el más básico y que menos LEs consume. Teclado USB directo y comunicación con el top mediante registros.  
-- USB_L2: L1 + control del estado de los LEDs del teclado.   
+## Dos opciones:
+- USB_L2: Teclado USB directo y comunicación con el top mediante registros.  
+  Este módulo tiene 3 entradas para controlar el estado de los leds del teclado USB, si no van a usarse, deben conectarse a 0 lógico para ahorrar LEs.
 - USB_PS2: conversión directa de USB a PS/2 para aprovechar cores retro sin apenas modificarlos.  
    Para ello, el módulo se conecta a las líneas USB y, como salida, genera las señales PS/2.  
    Este módulo tiene 3 entradas para controlar el estado de los leds del teclado USB, si no van a usarse, deben conectarse a 0 lógico.
@@ -31,9 +31,9 @@ List of keyboards tested and working:
 - MANFALI Generic Keyboard (VID: 1C4F, PID: 0002)
 - Dell Smartcard 06JJ08 (VID: 413C, PID: 2101)
 
-## Three options:
-- USB_L1: the most basic and that uses the least LEs. Direct USB keyboard and communication with the top through registers.
-- USB_L2: L1 + control of the status of the keyboard LEDs.
+## Two options:
+- USB_L2: Direct USB keyboard and communication with the top through registers.  
+  This module has 3 inputs to control the status of the USB keyboard LEDs, if they are not going to be used, they must be connected to logical 0 to save LEs.  
 - USB_PS2: direct conversion from USB to PS/2 to take advantage of retro cores without hardly modifying them.  
    To do this, the module connects to the USB lines and, as an output, generates the PS/2 signals.  
    This module has 3 inputs to control the status of the LEDs of the USB keyboard, if they are not going to be used, they must be connected to logical 0.  
