@@ -9,6 +9,7 @@ Lista de teclados testeados y funcionando:
 - Belkin Generic Keyboard (VID:1241, PID:1603)
 - MANFALI Generic Keyboard (VID:1C4F, PID:0002)
 - Dell Smartcard 06JJ08 (VID:413C, PID:2101)
+- Logitech Unifying Receiver (VID:046D, PID:C52B)
 
 ## Dos opciones:
 - USB_L2: Teclado USB directo y comunicación con el top mediante registros.  
@@ -30,6 +31,7 @@ List of keyboards tested and working:
 - Belkin Generic Keyboard (VID: 1241, PID: 1603)
 - MANFALI Generic Keyboard (VID: 1C4F, PID: 0002)
 - Dell Smartcard 06JJ08 (VID: 413C, PID: 2101)
+- Logitech Unifying Receiver (VID:046D, PID:C52B)
 
 ## Two options:
 - USB_L2: Direct USB keyboard and communication with the top through registers.  
