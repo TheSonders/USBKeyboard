@@ -2,7 +2,7 @@
 /*
 MIT License
 
-Copyright (c) 2021 Antonio Sánchez (@TheSonders)
+Copyright (c) 2021 Antonio SÃ¡nchez (@TheSonders)
 THE EXPERIMENT GROUP (@agnuca @Nabateo @subcriticalia)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,17 +25,17 @@ SOFTWARE.
 
  USB<->PS2
 Convertidor de teclado USB a teclado PS2 con soporte de LEDs
-Este módulo recibe y maneja directamente las líneas de transmisión USB.
-Genera las señales PS/2 a 19200 baudios que simulan las teclas pulsadas/soltadas.
+Este mÃ³dulo recibe y maneja directamente las lÃ­neas de transmisiÃ³n USB.
+Genera las seÃ±ales PS/2 a 19200 baudios que simulan las teclas pulsadas/soltadas.
  
- USO DEL MÓDULO:
- -Señal de entrada de reloj 48MHz
- -Señales de entrada/Salida USB (D+ y D-)
- -Señales de salida PS/2 (CLK y DTA)
- -Señales de entrada del estado deseado para los 3 leds del teclado USB
-    (Si no van a usarse estas entradas conectar a lógica 0)
+ USO DEL MÃ“DULO:
+ -SeÃ±al de entrada de reloj 48MHz
+ -SeÃ±ales de entrada/Salida USB (D+ y D-)
+ -SeÃ±ales de salida PS/2 (CLK y DTA)
+ -SeÃ±ales de entrada del estado deseado para los 3 leds del teclado USB
+    (Si no van a usarse estas entradas conectar a lÃ³gica 0)
  
- Antonio Sánchez (@TheSonders)
+ Antonio SÃ¡nchez (@TheSonders)
  Referencias:
  -Ben Eater Youtube Video:
      https://www.youtube.com/watch?v=wdgULBpRoXk
@@ -103,10 +103,10 @@ reg Device_Connected=0;
 ////////////////////////////////////////////////////////////
 //                     SYNC LAYER                         //
 ////////////////////////////////////////////////////////////
-// Esta capa recibe directamente los datos de las líneas.
+// Esta capa recibe directamente los datos de las lÃ­neas.
 // Determina la velocidad del device y
-// se sincroniza con los flancos en las líneas de datos
-// Entrega a la capa superior los símbolos ya muestreados
+// se sincroniza con los flancos en las lÃ­neas de datos
+// Entrega a la capa superior los sÃ­mbolos ya muestreados
 ////////////////////////////////////////////////////////////
 reg [$clog2(`PRES_LowSpeed)-1:0]Prescaler_Reload=0;
 reg [$clog2(`PRES_LowSpeed)-1:0]RX_Prescaler=0;
@@ -158,10 +158,10 @@ end
 ////////////////////////////////////////////////////////////
 //                    SYMBOL LAYER                        //
 ////////////////////////////////////////////////////////////
-// Esta capa recibe los cuatro símbolos ya muestrados.
+// Esta capa recibe los cuatro sÃ­mbolos ya muestrados.
 // Recorta las tramas SYNC, SOP y EOP y filtra el bit stuff.
 // Entrega a la capa superior los bits equivalentes 
-// del payload, y las señales Start of Packet y End of Packet
+// del payload, y las seÃ±ales Start of Packet y End of Packet
 ////////////////////////////////////////////////////////////
 reg [1:0]Prev_SYM=0;
 reg [1:0]Prev_Prev_SYM=0;
@@ -238,7 +238,7 @@ end
 //                    DECODE LAYER                        //
 ////////////////////////////////////////////////////////////
 // Esta capa recibe los bits del payload y
-// las señales SOP y EOP.
+// las seÃ±ales SOP y EOP.
 // Decodifica los paquetes y calcula el CRC.
 ////////////////////////////////////////////////////////////
 `define PID_Out         8'hE1
@@ -305,12 +305,12 @@ end
 ////////////////////////////////////////////////////////////
 //                      TOP LAYER                         //
 ////////////////////////////////////////////////////////////
-// Máquina de estados general.
+// MÃ¡quina de estados general.
 // -Detectar la presencia de un device y determinar su velocidad.
 // -Reiniciar el Device
-// -Setup de la dirección del device
+// -Setup de la direcciÃ³n del device
 // -Forzar el device a modo BOOT
-// -Solicitar (paquete IN) periódicamente el estado de las teclas
+// -Solicitar (paquete IN) periÃ³dicamente el estado de las teclas
 // -Un device en modo BOOT devuelve NAK si dicho estado no ha cambiado
 // 
 ////////////////////////////////////////////////////////////
@@ -742,7 +742,7 @@ always @(posedge clk)begin
                     PS2_STM<=PS2_STM+1;
                     Cpy_RollOver<={Cpy_RollOver[7:0],Cpy_RollOver[47:8]};
                     RollOver<={RollOver[7:0],RollOver[47:8]};
-                    if (SendKey==1)begin
+                    if (SendKey==1 && PS2Code[7:0]!=0)begin //Invalid keys
                     if (AddKey==1)begin
                         Add_PS2_Buffer({8'h0,PS2Code});
                     end
