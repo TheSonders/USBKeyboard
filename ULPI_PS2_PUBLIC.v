@@ -105,7 +105,7 @@ Genera las señales PS/2 a 19200 baudios que simulan las teclas pulsadas/soltadas
 `define CTRL_OPMODE     8'h43
 `define CTRL_CHIRP      8'h4B
 `define DIS_INTERRUPTS  8'h00
-`define ENA_PULLDOWNS   8'h06
+`define ENA_PULLDOWNS   8'h66 //Pulldown and CPEN enabled
 
 module ULPI_PS2
     (input wire clk,            //60MHz
@@ -122,13 +122,15 @@ module ULPI_PS2
     input wire NXT,
     input wire DIR,
     output reg STP=0,
-    output reg RESET_n=1,
-    output reg CS=1);
+    output wire RESET_n,    //Fixed to High
+    output wire CS);        //Fixed to High
     
 `define CLK_MULT        60000   //(CLK / 1000)
 `define PS2_PRES        1561    //(CLK / 19200 baud / 2)-1
 
 assign DATA=(DIR==`DIRAsInput)?8'hZ:TX_Shift[7:0];
+assign RESET_n=1'b1;
+assign CS=1'b1;
 
 `define PID_Out         8'hE1
 `define PID_In          8'h69
@@ -272,7 +274,7 @@ reg [47:0]Cpy_RollOver=0;
 reg AddKey=0;
 reg SendKey=0;
 
-always @(posedge clk)begin
+always @(negedge clk)begin
     if (StartTimer==1) StartTimer<=0;
     if (MACHINE_RESET==1) MACHINE_RESET<=0;
     if (MACHINE_RESET==0 && TXLeftBits==0 && (TimerEnd==1 || NewInPacket==1))begin
@@ -461,8 +463,10 @@ always @(posedge clk)begin
                 if (STP==0)STP<=1;
                 TX_Shift[7:0]<=`TX_NOOP;
             end
-            TX_Shift<={`TX_NOOP,TX_Shift[95:8]};
-            TXLeftBits<=TXLeftBits-1;
+            else begin
+                TX_Shift<={`TX_NOOP,TX_Shift[95:8]};
+                TXLeftBits<=TXLeftBits-1;
+            end
         end
         else begin
             if (STP==1)STP<=0;
@@ -669,7 +673,7 @@ always @(posedge clk)begin
         end
         else PS2_Prescaler<=PS2_Prescaler-1;
     end 
-end //always posedge
+end //always negedge
 
 ////////////////////////////////////////////////////////////
 //                   RECEPCION ULPI                       //
@@ -744,7 +748,7 @@ reg [15:0]PS2Code=0;
 initial 
 	$readmemh ("USB_PS2_CONVERSION.txt",PS2Memory);
     
-always @(posedge clk)begin
+always @(negedge clk)begin
     PS2Code<=PS2Memory[PS2MemoryAdd];
 end    
 
@@ -797,7 +801,7 @@ reg rTimerEnd=0;
 reg PrevStartTimer=0;
 reg [21:0]Counter=0;
 
-always @(posedge clk)begin
+always @(negedge clk)begin
     PrevStartTimer<=StartTimer;
     if (StartTimer && !PrevStartTimer)begin
         Counter<=TimerPreload;
