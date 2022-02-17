@@ -2,7 +2,7 @@
 /*
 MIT License
 
-Copyright (c) 2021 Antonio S�nchez (@TheSonders)
+Copyright (c) 2022 Antonio Sánchez (@TheSonders)
 THE EXPERIMENT GROUP (@agnuca @Nabateo @subcriticalia)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,19 +24,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
  ULPI<->PS2
-Convertidor de teclado USB a teclado PS2 con soporte de LEDs.
-Comunicaci�n con el USB a trav�s del chip TUSB1210 usando protocolo ULPI.
-Genera las se�ales PS/2 a 19200 baudios que simulan las teclas pulsadas/soltadas.
+Convertidor de teclado USB a teclado PS2.
+Por el momento sólo admite teclados low speed.
+El soporte de LEDs de teclado es provisional y causa problemas.
+Comunicación con el USB a través del chip TUSB1210 usando protocolo ULPI.
+Genera las señales PS/2 a 15000 baudios que simulan las teclas pulsadas/soltadas.
  
- USO DEL M�DULO:
- -Se�al de entrada de reloj 60MHz (generada por el TUSB)
+ USO DEL MÓDULO:
+ -Señal de entrada de reloj 60MHz (generada por el TUSB)
  -Interfaz ULPI.
- -Se�ales de salida PS/2 (CLK y DTA)
- -Se�al de Dispositivo Conectado (usado para depuraci�n)
- -Se�ales de entrada del estado deseado para los 3 leds del teclado USB
-    (Si no van a usarse estas entradas conectar a l�gica 0) 
+ -Señales de salida PS/2 (CLK y DTA)
+ -Señales de entrada del estado deseado para los 3 leds del teclado USB
+    (Se recomienda conectar estas señales a lógica 0, aún en depuración)
+ -ATENCIÓN: Para usar en la Arrow DECA es necesario desfasar el reloj
+	de entrada -30º (menos treinta grados) con respecto al reloj del pin H11
  
- Antonio S�nchez (@TheSonders)
+ Antonio Sánchez (@TheSonders)
  Referencias:
  -Ben Eater Youtube Video:
      https://www.youtube.com/watch?v=wdgULBpRoXk
@@ -101,21 +104,21 @@ Genera las se�ales PS/2 a 19200 baudios que simulan las teclas pulsadas/soltadas
 `define TX_WR_OTG       8'h8A
 
 // ULPI CONSTANTS
-`define CTRL_RESET      8'h63
-`define CTRL_OPMODE     8'h43
-`define CTRL_CHIRP      8'h4B
+`define CTRL_RESET      8'h66
+`define CTRL_OPMODE     8'h46
+`define CTRL_CHIRP      8'h4E
 `define DIS_INTERRUPTS  8'h00
 `define ENA_PULLDOWNS   8'h66 //Pulldown and CPEN enabled
+
 
 module ULPI_PS2
     (input wire clk,            //60MHz
     //Top Core
-    input wire LedNum,
-    input wire LedCaps,
-    input wire LedScroll,
+    input wire LedNum,			//Aún en depuración
+    input wire LedCaps,			//conectar estas 3 señales
+    input wire LedScroll,		//a lógica 0
     output reg PS2data=0,
-    output reg PS2clock=1,
-    output reg Device_Connected=0,
+	output reg PS2clock=0,
     //TUSB1210
     input wire FAULT_n,     //Overcurrent
     inout wire [7:0]DATA,
@@ -123,12 +126,13 @@ module ULPI_PS2
     input wire DIR,
     output reg STP=0,
     output wire RESET_n,    //Fixed to High
-    output wire CS);        //Fixed to High
-    
+    output wire CS         //Fixed to High
+	 );
+	 
 `define CLK_MULT        60000   //(CLK / 1000)
-`define PS2_PRES        1561    //(CLK / 19200 baud / 2)-1
+`define PS2_PRES        1999    //(CLK / 15000 baud / 2)-1
 
-assign DATA=(DIR==`DIRAsInput)?8'hZ:TX_Shift[7:0];
+assign DATA[7:0]=(DIR==`DIRAsInput)?8'hZ:TX_Shift[7:0];
 assign RESET_n=1'b1;
 assign CS=1'b1;
 
@@ -153,12 +157,12 @@ assign CS=1'b1;
 ////////////////////////////////////////////////////////////
 //                      TOP LAYER                         //
 ////////////////////////////////////////////////////////////
-// M�quina de estados general.
+// Máquina de estados general.
 // -Detectar la presencia de un device y determinar su velocidad.
 // -Reiniciar el Device
-// -Setup de la direcci�n del device
+// -Setup de la dirección del device
 // -Forzar el device a modo BOOT
-// -Solicitar (paquete IN) peri�dicamente el estado de las teclas
+// -Solicitar (paquete IN) periódicamente el estado de las teclas
 // -Un device en modo BOOT devuelve NAK si dicho estado no ha cambiado
 // 
 ////////////////////////////////////////////////////////////
@@ -168,38 +172,38 @@ assign CS=1'b1;
 // En cualquier momento, por inactividad del bus (3ms) entra en Suspended
 // Para evitar el Suspended mandar KA (Keep Alive)
 
-`define TL_PowerON              0              
-`define TL_ULPI_IntRise         1
-`define TL_ULPI_IntFall         2
-`define TL_ULPI_EnaPulls        3
-`define TL_Unconnected          4
-`define TL_Send_Reset           5
-`define TL_ULPI_SetMode         6
-`define TL_SetConfig            7
-`define TL_SendSETUPConfig      8
-`define TL_KeepAlive            9
-`define TL_SendSETUPAddress    10
-`define TL_SetAddress          11
-`define TL_WaitResponse        12
-`define TL_IN00                13
-`define TL_SEND_ACK00          14
-`define TL_IN20_CONFIG         15
-`define TL_SEND_ACK20_CONFIG   16
-`define TL_IN21                17
-`define TL_VerifyData          18
-`define TL_SendSETUPProtocol   19
-`define TL_SetProtocol         20
-`define TL_IN20_PROTOCOL       21
-`define TL_SEND_ACK20_PROTOCOL 22
-`define TL_SEND_DATA0_REPORT   23
-`define TL_SEND_OUT20_REPORT   24
-`define TL_SEND_DATA1_REPORT   25
-`define TL_IN20_REPORT         26
-`define TL_IN_DATA1_REPORT     27
-`define TL_SEND_ACK_DATA1      28
-`define TL_Wait                29
-`define TL_DelayRetry          30
-`define TL_KeepAlive2          31
+`define TL_PowerON             5'd0              
+`define TL_ULPI_IntRise        5'd1
+`define TL_ULPI_IntFall        5'd2
+`define TL_ULPI_EnaPulls       5'd3
+`define TL_Unconnected         5'd4
+`define TL_Send_Reset          5'd5
+`define TL_ULPI_SetMode        5'd6
+`define TL_SetConfig           5'd7
+`define TL_SendSETUPConfig     5'd8
+`define TL_KeepAlive           5'd9
+`define TL_SendSETUPAddress    5'd10
+`define TL_SetAddress          5'd11
+`define TL_WaitResponse        5'd12
+`define TL_IN00                5'd13
+`define TL_SEND_ACK00          5'd14
+`define TL_IN20_CONFIG         5'd15
+`define TL_SEND_ACK20_CONFIG   5'd16
+`define TL_IN21                5'd17
+`define TL_VerifyData          5'd18
+`define TL_SendSETUPProtocol   5'd19
+`define TL_SetProtocol         5'd20
+`define TL_IN20_PROTOCOL       5'd21
+`define TL_SEND_ACK20_PROTOCOL 5'd22
+`define TL_SEND_DATA0_REPORT   5'd23
+`define TL_SEND_OUT20_REPORT   5'd24
+`define TL_SEND_DATA1_REPORT   5'd25
+`define TL_IN20_REPORT         5'd26
+`define TL_IN_DATA1_REPORT     5'd27
+`define TL_SEND_ACK_DATA1      5'd28
+`define TL_Wait                5'd29
+`define TL_DelayRetry          5'd30
+`define TL_KeepAlive2          5'd31
 
 `define LEDS    {LedScroll,LedCaps,LedNum}
 
@@ -239,7 +243,6 @@ reg [95:0]ULPI_EnaPulls ={`ENA_PULLDOWNS,`TX_WR_OTG};
 reg [95:0]ULPI_NonDrivin={`CTRL_CHIRP,`TX_WR_CTRL};
 
 reg [8:0] TXLeftBits=0;
-reg MACHINE_RESET=0;
 reg [3:0]TimeOut=0;
 reg [2:0]LatchLEDS=0;
 reg [2:0]Stuff_Count=0;
@@ -273,31 +276,24 @@ reg [47:0]RollOver=0;
 reg [47:0]Cpy_RollOver=0;
 reg AddKey=0;
 reg SendKey=0;
+reg prev_DIR=0; 
 
-always @(negedge clk)begin
-    if (StartTimer==1) StartTimer<=0;
-    if (MACHINE_RESET==1) MACHINE_RESET<=0;
-    if (MACHINE_RESET==0 && TXLeftBits==0 && (TimerEnd==1 || NewInPacket==1))begin
+
+always @(posedge clk)begin
+	if (StartTimer==1) StartTimer<=0;
+	if (TXLeftBits==0 && (TimerEnd==1 || NewInPacket==1))begin
     case (TL_STM)
         `TL_PowerON:begin
-            SetTimer(1);
-            SendPacket(ULPI_Reset,16);
-            TL_STM<=`TL_ULPI_IntRise;
-        end
-        `TL_ULPI_IntRise:begin
-           SendPacket(ULPI_IntRise,16);
-           TL_STM<=`TL_ULPI_IntFall; 
-        end
-        `TL_ULPI_IntFall:begin
-           SendPacket(ULPI_IntFall,16);
-           TL_STM<=`TL_ULPI_EnaPulls; 
+			PS2clock<=1;
+				SetTimer(1);
+				SendPacket(ULPI_Reset,16);
+				TL_STM<=`TL_ULPI_EnaPulls;
         end
         `TL_ULPI_EnaPulls:begin
-           SendPacket(ULPI_EnaPulls,16);
+			SendPacket(ULPI_EnaPulls,16);
            TL_STM<=`TL_Unconnected; 
         end
         `TL_Unconnected:begin ListenIfConnected:
-            Device_Connected<=0;
             TimeOut<=0;
             LatchLEDS<=0;
             if (INDECODE_STM==`STM_IDLE)begin
@@ -326,10 +322,9 @@ always @(negedge clk)begin
                 (TL_Fail!=`TL_IN21 && RECEIVED_PID !=`PID_ACK && RECEIVED_PID!=`PID_Data1))begin
                 if (TimeOut==15) begin
                     TL_STM<=`TL_PowerON;
-                    MACHINE_RESET<=1;
                 end
                 else begin
-                    TimeOut<=TimeOut+1;
+                    TimeOut<=TimeOut+4'd1;
                     SetTimer(1);
                     TL_STM<=`TL_DelayRetry;
                 end
@@ -369,17 +364,16 @@ always @(negedge clk)begin
         `TL_SEND_ACK00,`TL_SEND_ACK20_CONFIG,
         `TL_SEND_ACK20_PROTOCOL,`TL_SEND_ACK_DATA1:begin
                 SetTimer(0);
-                    SendPacket(Packet_ACK,8);
-                    if (TL_STM==`TL_SEND_ACK00)TL_STM<=`TL_SendSETUPConfig;
-                    else if (TL_STM==`TL_SEND_ACK20_CONFIG) TL_STM<=`TL_SendSETUPProtocol;
-                    else if (TL_STM==`TL_SEND_ACK_DATA1)begin
-                        TL_STM<=`TL_KeepAlive;
-                        LatchLEDS<=`LEDS;
-                    end
-                    else begin
-                        TL_STM<=`TL_IN21;
-                        Device_Connected<=1;
-                    end
+				SendPacket(Packet_ACK,8);
+				if (TL_STM==`TL_SEND_ACK00)TL_STM<=`TL_SendSETUPConfig;
+				else if (TL_STM==`TL_SEND_ACK20_CONFIG) TL_STM<=`TL_SendSETUPProtocol;
+				else if (TL_STM==`TL_SEND_ACK_DATA1)begin
+					TL_STM<=`TL_KeepAlive;
+					LatchLEDS<=`LEDS;
+				end
+				else begin
+					TL_STM<=`TL_IN21;
+				end
         end
         `TL_IN00:begin
                 SetTimer(0);
@@ -457,20 +451,20 @@ always @(negedge clk)begin
 ////////////////////////////////////////////////////////////
 //                 TRANSMISION ULPI                       //
 ////////////////////////////////////////////////////////////
-    if (DIR==`DIRAsOutput)begin
-        if (NXT==1) begin
-            if (TXLeftBits==0) begin
-                if (STP==0)STP<=1;
-                TX_Shift[7:0]<=`TX_NOOP;
-            end
-            else begin
-                TX_Shift<={`TX_NOOP,TX_Shift[95:8]};
-                TXLeftBits<=TXLeftBits-1;
-            end
-        end
-        else begin
-            if (STP==1)STP<=0;
-        end
+	prev_DIR<=DIR;
+	if (prev_DIR==`DIRAsOutput && DIR==`DIRAsOutput)begin
+		if (TXLeftBits==1) begin
+			if (STP==0)STP<=1;
+			TX_Shift[7:0]<=`TX_NOOP;
+			TXLeftBits<=0;
+		end
+		if (NXT==1) begin
+			if (TXLeftBits>1)begin
+				TX_Shift<={`TX_NOOP,TX_Shift[95:8]};
+				TXLeftBits<=TXLeftBits-9'd1;
+			end
+		end
+		if (STP==1)STP<=0;
     end  
 ////////////////////////////////////////////////////////////
 //                    PS2 CONVERSION                      //
@@ -479,12 +473,12 @@ always @(negedge clk)begin
         if (PS2Busy==1 && TL_STM!=`TL_VerifyData) begin
             case (PS2_STM)
                 1,3,5,7,9,11,13,15: begin
-                    PS2_STM<=PS2_STM+1;
+                    PS2_STM<=PS2_STM+6'd1;
                     Cpy_Rmodifiers<={Cpy_Rmodifiers[0],Cpy_Rmodifiers[7:1]};
                     Rmodifiers<={Rmodifiers[0],Rmodifiers[7:1]};
                 end
                 0: begin
-                    PS2_STM<=PS2_STM+1;
+                    PS2_STM<=PS2_STM+6'd1;
                     if(Cpy_Rmodifiers[0]!=Rmodifiers[0])begin    
                         Cpy_Rmodifiers[0]<=Rmodifiers[0];
                         if (Cpy_Rmodifiers[0]==1) begin
@@ -496,7 +490,7 @@ always @(negedge clk)begin
                     end
                 end
                 2: begin
-                    PS2_STM<=PS2_STM+1;
+                    PS2_STM<=PS2_STM+6'd1;
                     if(Cpy_Rmodifiers[0]!=Rmodifiers[0])begin
                         Cpy_Rmodifiers[0]<=Rmodifiers[0];
                         if (Cpy_Rmodifiers[0]==1) begin
@@ -508,7 +502,7 @@ always @(negedge clk)begin
                     end
                 end
                 4: begin
-                    PS2_STM<=PS2_STM+1;
+                    PS2_STM<=PS2_STM+6'd1;
                     if(Cpy_Rmodifiers[0]!=Rmodifiers[0])begin
                         Cpy_Rmodifiers[0]<=Rmodifiers[0];
                         if (Cpy_Rmodifiers[0]==1) begin
@@ -520,7 +514,7 @@ always @(negedge clk)begin
                     end
                 end
                 6: begin
-                    PS2_STM<=PS2_STM+1;
+                    PS2_STM<=PS2_STM+6'd1;
                     if(Cpy_Rmodifiers[0]!=Rmodifiers[0])begin
                         Cpy_Rmodifiers[0]<=Rmodifiers[0];
                         if (Cpy_Rmodifiers[0]==1) begin
@@ -532,7 +526,7 @@ always @(negedge clk)begin
                     end
                 end
                 8: begin
-                    PS2_STM<=PS2_STM+1;
+                    PS2_STM<=PS2_STM+6'd1;
                     if(Cpy_Rmodifiers[0]!=Rmodifiers[0])begin
                         Cpy_Rmodifiers[0]<=Rmodifiers[0];
                         if (Cpy_Rmodifiers[0]==1) begin
@@ -544,7 +538,7 @@ always @(negedge clk)begin
                     end
                 end
                 10: begin
-                    PS2_STM<=PS2_STM+1;
+                    PS2_STM<=PS2_STM+6'd1;
                     if(Cpy_Rmodifiers[0]!=Rmodifiers[0])begin
                         Cpy_Rmodifiers[0]<=Rmodifiers[0];
                         if (Cpy_Rmodifiers[0]==1) begin
@@ -556,7 +550,7 @@ always @(negedge clk)begin
                     end
                 end
                 12: begin
-                    PS2_STM<=PS2_STM+1;
+                    PS2_STM<=PS2_STM+6'd1;
                     if(Cpy_Rmodifiers[0]!=Rmodifiers[0])begin
                         Cpy_Rmodifiers[0]<=Rmodifiers[0];
                         if (Cpy_Rmodifiers[0]==1) begin
@@ -568,7 +562,7 @@ always @(negedge clk)begin
                     end
                 end
                 14: begin
-                    PS2_STM<=PS2_STM+1;
+                    PS2_STM<=PS2_STM+6'd1;
                     if(Cpy_Rmodifiers[0]!=Rmodifiers[0])begin
                         Cpy_Rmodifiers[0]<=Rmodifiers[0];
                         if (Cpy_Rmodifiers[0]==1) begin
@@ -579,9 +573,9 @@ always @(negedge clk)begin
                         end
                     end
                 end
-                17,20,23,26,29,32:begin PS2_STM<=PS2_STM+1;end //Wait for memory
+                17,20,23,26,29,32:begin PS2_STM<=PS2_STM+6'd1;end //Wait for memory
                 16,19,22,25,28,31:begin
-                    PS2_STM<=PS2_STM+1;
+                    PS2_STM<=PS2_STM+6'd1;
                     if (Cpy_RollOver[7:0]!=RollOver[7:0])begin
                         SendKey<=1;
                         if (Cpy_RollOver[7:0]==0) begin// Add key
@@ -598,7 +592,7 @@ always @(negedge clk)begin
                     else SendKey<=0;
                 end
                 18,21,24,27,30,33:begin
-                    PS2_STM<=PS2_STM+1;
+                    PS2_STM<=PS2_STM+6'd1;
                     Cpy_RollOver<={Cpy_RollOver[7:0],Cpy_RollOver[47:8]};
                     RollOver<={RollOver[7:0],RollOver[47:8]};
                     if (SendKey==1 && PS2Code[7:0]!=0)begin //Invalid keys
@@ -627,11 +621,11 @@ always @(negedge clk)begin
             0,24: begin
                 if (`NextChar==0) begin
                     PS2_signal<={11'b0,PS2_signal[32:11]};
-                    PS2TX_STM<=PS2TX_STM+24;
+                    PS2TX_STM<=PS2TX_STM+7'd24;
                 end
                 else begin
                     ParityBit<=1;
-                    PS2TX_STM<=PS2TX_STM+1;
+                    PS2TX_STM<=PS2TX_STM+7'd1;
                     PS2data<=`StartBit;
                 end
             end
@@ -642,16 +636,16 @@ always @(negedge clk)begin
                 end
                 else begin
                     ParityBit<=1;
-                    PS2TX_STM<=PS2TX_STM+1;
+                    PS2TX_STM<=PS2TX_STM+7'd1;
                     PS2data<=`StartBit;
                 end
             end
             18,42,66: begin
                 PS2clock<=1;
                 PS2data<=ParityBit;
-                PS2TX_STM<=PS2TX_STM+1;
+                PS2TX_STM<=PS2TX_STM+7'd1;
             end
-            23,47: PS2TX_STM<=PS2TX_STM+1;
+            23,47: PS2TX_STM<=PS2TX_STM+7'd1;
             71: begin
                 PS2_buffer_busy<=0;
                 PS2TX_STM<=0;
@@ -660,25 +654,25 @@ always @(negedge clk)begin
                 if (PS2TX_STM[0]==0) begin
                     PS2clock<=1;
                     PS2data<=PS2_signal[0];
-                    PS2TX_STM<=PS2TX_STM+1;
+                    PS2TX_STM<=PS2TX_STM+7'd1;
                 end
                 else begin
                     PS2clock<=0;
                     PS2_signal<={1'b0,PS2_signal[32:1]};
                     ParityBit<=ParityBit^PS2data;
-                    PS2TX_STM<=PS2TX_STM+1;
+                    PS2TX_STM<=PS2TX_STM+7'd1;
                 end
             end
         endcase
         end
-        else PS2_Prescaler<=PS2_Prescaler-1;
+        else PS2_Prescaler<=PS2_Prescaler-11'd1;
     end 
-end //always negedge
+end 
 
 ////////////////////////////////////////////////////////////
 //                   RECEPCION ULPI                       //
 ////////////////////////////////////////////////////////////
-//La se�al se cambia en el pulso positivo y se lee en el pulso negativo
+//El PHY cambia las señales en el flanco negativo
 
 reg [1:0]INDECODE_STM=`STM_UNCONNECTED;
 reg [7:0]RECEIVED_PID=0;
@@ -691,12 +685,9 @@ reg NewInPacket=0;
 `define RXError         2'b11
 `define RXActive        2'b01
 
-always @(negedge clk)begin
+always @(posedge clk)begin
     if (NewInPacket==1) NewInPacket<=0;
-    if (MACHINE_RESET==1)begin
-        INDECODE_STM<=`STM_UNCONNECTED;
-    end
-    else begin
+	 if (prev_DIR==DIR)begin
         if (DIR==`DIRAsInput)begin
             if (NXT==1) begin NewData:
                 if (INDECODE_STM==`STM_PID)begin
@@ -736,7 +727,7 @@ always @(negedge clk)begin
                 NewInPacket<=1;
             end
         end
-    end
+	end
 end
 
 ////////////////////////////////////////////////////////////
@@ -748,7 +739,7 @@ reg [15:0]PS2Code=0;
 initial 
 	$readmemh ("USB_PS2_CONVERSION.txt",PS2Memory);
     
-always @(negedge clk)begin
+always @(posedge clk)begin
     PS2Code<=PS2Memory[PS2MemoryAdd];
 end    
 
@@ -779,8 +770,8 @@ endtask
 
 task SendPacket(input [95:0]Packet,input [9:0] PacketSize);
     begin
-        TX_Shift<=Packet;
-        TXLeftBits<=(PacketSize/8);
+      TX_Shift<=Packet;
+		TXLeftBits<=(PacketSize/8)+1;
     end
 endtask
 
@@ -801,7 +792,7 @@ reg rTimerEnd=0;
 reg PrevStartTimer=0;
 reg [21:0]Counter=0;
 
-always @(negedge clk)begin
+always @(posedge clk)begin
     PrevStartTimer<=StartTimer;
     if (StartTimer && !PrevStartTimer)begin
         Counter<=TimerPreload;
@@ -810,6 +801,6 @@ always @(negedge clk)begin
     else if (Counter==0) begin
         rTimerEnd<=1;
     end
-    else Counter<=Counter-1;
+    else Counter<=Counter-22'd1;
 end    
 endmodule 
