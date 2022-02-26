@@ -26,7 +26,6 @@ SOFTWARE.
  ULPI<->PS2
 Convertidor de teclado USB a teclado PS2.
 Por el momento sólo admite teclados low speed.
-El soporte de LEDs de teclado es provisional y causa problemas.
 Comunicación con el USB a través del chip TUSB1210 usando protocolo ULPI.
 Genera las señales PS/2 a 15000 baudios que simulan las teclas pulsadas/soltadas.
  
@@ -35,7 +34,6 @@ Genera las señales PS/2 a 15000 baudios que simulan las teclas pulsadas/soltada
  -Interfaz ULPI.
  -Señales de salida PS/2 (CLK y DTA)
  -Señales de entrada del estado deseado para los 3 leds del teclado USB
-    (Se recomienda conectar estas señales a lógica 0, aún en depuración)
  -ATENCIÓN: Para usar en la Arrow DECA es necesario desfasar el reloj
 	de entrada -30º (menos treinta grados) con respecto al reloj del pin H11
  
@@ -106,7 +104,7 @@ Genera las señales PS/2 a 15000 baudios que simulan las teclas pulsadas/soltada
 // ULPI CONSTANTS
 `define CTRL_RESET      8'h66
 `define CTRL_OPMODE     8'h46
-`define CTRL_CHIRP      8'h4E
+`define CTRL_CHIRP      8'h40
 `define DIS_INTERRUPTS  8'h00
 `define ENA_PULLDOWNS   8'h66 //Pulldown and CPEN enabled
 
@@ -325,6 +323,7 @@ always @(posedge clk)begin
                 end
                 else begin
                     TimeOut<=TimeOut+4'd1;
+						  SendPacket(Packet_SOF,24);
                     SetTimer(1);
                     TL_STM<=`TL_DelayRetry;
                 end
@@ -363,7 +362,7 @@ always @(posedge clk)begin
         end
         `TL_SEND_ACK00,`TL_SEND_ACK20_CONFIG,
         `TL_SEND_ACK20_PROTOCOL,`TL_SEND_ACK_DATA1:begin
-                SetTimer(0);
+				SetTimer(1);
 				SendPacket(Packet_ACK,8);
 				if (TL_STM==`TL_SEND_ACK00)TL_STM<=`TL_SendSETUPConfig;
 				else if (TL_STM==`TL_SEND_ACK20_CONFIG) TL_STM<=`TL_SendSETUPProtocol;
@@ -678,6 +677,8 @@ reg [1:0]INDECODE_STM=`STM_UNCONNECTED;
 reg [7:0]RECEIVED_PID=0;
 reg [95:0]RECEIVED_DATA=0;
 reg NewInPacket=0;
+reg [6:0]NewDelayPacket=0;
+
 
 `define RXEvent         DATA[5:4]
 `define LineState       DATA[1:0]
@@ -687,6 +688,13 @@ reg NewInPacket=0;
 
 always @(posedge clk)begin
     if (NewInPacket==1) NewInPacket<=0;
+	 if (NewDelayPacket>0) begin
+		if (NewDelayPacket==127) begin
+			NewInPacket<=1;
+			NewDelayPacket<=0;
+		end
+		else NewDelayPacket<=NewDelayPacket+1;
+	 end
 	 if (prev_DIR==DIR)begin
         if (DIR==`DIRAsInput)begin
             if (NXT==1) begin NewData:
@@ -715,7 +723,7 @@ always @(posedge clk)begin
                     `STM_DATAFIELD:begin
                         if (`RXEvent==`RXAttached) begin
                             INDECODE_STM<=`STM_IDLE;
-                            NewInPacket<=1;
+									 NewDelayPacket<=1;
                         end
                     end
                 endcase
@@ -724,7 +732,7 @@ always @(posedge clk)begin
         else begin DirAsOutput:
             if (INDECODE_STM==`STM_DATAFIELD)begin
                 INDECODE_STM<=`STM_IDLE;
-                NewInPacket<=1;
+					 NewDelayPacket<=1;
             end
         end
 	end
