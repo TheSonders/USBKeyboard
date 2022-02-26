@@ -18,11 +18,9 @@ Lista de teclados testeados y funcionando (la versión ULPI actualmente sólo so
 - USB_PS2: conversión directa de USB a PS/2 para aprovechar cores retro sin apenas modificarlos.  
    Para ello, el módulo se conecta a las líneas USB y, como salida, genera las señales PS/2.  
    Este módulo tiene 3 entradas para controlar el estado de los leds del teclado USB, si no van a usarse, deben conectarse a 0 lógico.
-   Versión preliminar, se ha testeado con 5 teclados diferentes y funciona.
    Requiere el archivo USB_PS2_CONVERSION.txt. 
 - ULPI_PS2: interfaz con teclados USB a través de chip que use protocolo ULPI.  
   Testado en una placa Deca, actualmente, funciona sólo con teclados Low-Speed.  
-  No usar las entradas de los Leds de teclado, en depuración.   
   Atención: debido a las características de la placa Deca, el reloj de entrada necesita  
   un desfase de -30º (menos treinta grados) con respecto al reloj suministrado por el PHY.
 
@@ -46,11 +44,9 @@ List of keyboards tested and working (the ULPI version currently only supports L
 - USB_PS2: direct conversion from USB to PS/2 to take advantage of retro cores without hardly modifying them.  
    To do this, the module connects to the USB lines and, as an output, generates the PS/2 signals.  
    This module has 3 inputs to control the status of the LEDs of the USB keyboard, if they are not going to be used, they must be connected to logical 0.  
-   Preliminary version, it has been tested with 5 different keyboards and it works.    
    Requires the USB_PS2_CONVERSION.txt file.
 - ULPI_PS2: interface with USB keyboards through a chip that uses the ULPI protocol.   
   Tested on a Deca board, it currently works only with Low-Speed keyboards.    
-  Do not use the inputs of the keyboard Leds, in debugging.   
   Attention: Due to the characteristics of the Deca board, the input clock needs  
   an offset of -30º (minus thirty degrees) with respect to the clock supplied by the PHY.   
   
